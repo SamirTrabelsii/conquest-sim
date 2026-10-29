@@ -19,6 +19,7 @@ import type { MapView } from './mapView';
 import type { DuelPanel } from './duelPanel';
 import type { Hud } from './hud';
 import { wait } from './clock';
+import { formatShare } from './dom';
 import { flash, stamp } from './cards';
 import type { Pins } from './pins';
 import { storyBadges } from '../engine/stories';
@@ -189,7 +190,7 @@ export async function playBattle(
   await map.fall(territoryOwners(atlas, state), loser.code, loserTerritories);
   await peel();
 
-  panel.setHeader(`+${(gained * 100).toFixed(1)}% OF WORLD LAND`);
+  panel.setHeader(`+${formatShare(gained)} OF WORLD LAND`);
   panel.caption(`${winner.name.toUpperCase()} TAKES ${loser.name.toUpperCase()}`, result.winner);
   await hud.setCountries(aliveOwners(state).length, true);
   await wait(t.afterConquest);

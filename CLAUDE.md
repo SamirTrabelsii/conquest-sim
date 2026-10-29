@@ -2,7 +2,8 @@
 
 A self-playing web app that renders a world-conquest simulation as vertical video
 (1080x1920) for YouTube Shorts, Instagram Reels and TikTok. Each episode is
-screen-recorded (later: rendered automatically to MP4).
+rendered to MP4 frame by frame (`npm run render`); the browser version is for
+previewing and development.
 
 ## Concept
 - World map; every country is filled with its own flag.
@@ -38,6 +39,23 @@ screen-recorded (later: rendered automatically to MP4).
 - `src/ui/` map view, camera zoom to the battle region, duel panel, HUD, cards
 - `src/config.ts` episode length, battles per episode, speed, seed, theme,
   battle module, optional "hero country" (always the attacker)
+- `scripts/render.mjs` MP4 renderer: builds the app, runs it in headless Chrome
+  (installed Chrome via `playwright-core`) on the virtual clock, pipes frames
+  to ffmpeg, then writes logs and the next save into the project.
+
+## Rendering
+- All timing goes through `src/ui/clock.ts` (`wait`, `tween`, `duration`).
+  Never use `setTimeout`, `requestAnimationFrame`, `performance.now()` or
+  `animation.finished` for anything visible: in render mode (`?render`) only
+  the clock moves time. `element.animate()` is fine (the clock steers it).
+- Visual-only randomness (e.g. the draw spin) uses its own seeded RNG stream,
+  never the episode RNG, so visuals can change without changing outcomes.
+- `npm run render` plays the next episode from `public/saves/latest.json` and
+  writes `renders/epNNN.mp4` (git-ignored), `logs/log-epNNN.{json,txt}`,
+  `public/saves/world-after-epNNN.json` and the new `latest.json`.
+  Flags: `--fresh`, `--seconds N` (partial, saves nothing), `--dry`, `--seed N`.
+- Determinism check: render the same input twice and compare
+  `renders/*.frames.txt` (one SHA-256 per frame); they must be identical.
 
 ## Style
 - Original branding (not a copy of any existing channel): own name, palette,
@@ -50,8 +68,9 @@ screen-recorded (later: rendered automatically to MP4).
 
 ## Git
 - Remote: https://github.com/SamirTrabelsii/conquest-sim (branch `main`).
-- After recording an episode, commit its save (`public/saves/latest.json`) and
-  logs together with the code, so the episode can be re-rendered exactly later.
+- After rendering an episode, commit its saves (`public/saves/`) and logs
+  (`logs/`) together with the code, so the episode can be re-rendered exactly
+  later. MP4s stay out of git.
 
 ## Working rules
 - Plan first, then build in small steps; run the dev server and check the

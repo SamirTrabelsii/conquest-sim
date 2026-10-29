@@ -2,7 +2,7 @@ import type { Atlas } from '../engine/atlas';
 import type { EpisodeSummary, Standing } from '../engine/episode';
 import { config } from '../config';
 import { theme } from '../theme';
-import { flagImg, h, px, sticker, stickerEdge, text } from './dom';
+import { flagImg, formatShare, h, px, sticker, stickerEdge, text } from './dom';
 import { duration, wait } from './clock';
 import { flagUrl } from './flags';
 import { startHint } from './stage';
@@ -126,7 +126,7 @@ export async function showSummary(stage: HTMLElement, atlas: Atlas, s: EpisodeSu
     h('div', { display: 'flex', flexDirection: 'column', gap: px(gap / 2) }, rows),
     h('div', { display: 'flex', gap: px(gap * 2) }, [
       leaderboard(atlas, 'MOST WINS', s.topWins, (v) => String(v)),
-      leaderboard(atlas, 'MOST LAND', s.topLand, (v) => `${(v * 100).toFixed(1)}%`),
+      leaderboard(atlas, 'MOST LAND', s.topLand, formatShare),
     ]),
     sticker(c.paper, [
       text(String(s.countriesLeft), 'display', theme.size.hero, c.textOnPaper),
@@ -182,7 +182,12 @@ export function stamp(stage: HTMLElement, label: string): () => Promise<void> {
 export function flash(stage: HTMLElement): void {
   const node = h('div', { position: 'absolute', inset: '0', background: c.flash, pointerEvents: 'none' });
   stage.appendChild(node);
-  node
-    .animate([{ opacity: config.map.impact.flashOpacity }, { opacity: 0 }], { duration: duration(config.timing.flash), easing: 'ease-out' })
-    .finished.then(() => node.remove());
+  node.animate([{ opacity: config.map.impact.flashOpacity }, { opacity: 0 }], {
+    duration: duration(config.timing.flash),
+    easing: 'ease-out',
+    fill: 'forwards',
+  });
+  // Removed via the app clock (not animation.finished) so it also works
+  // when rendering with the virtual clock.
+  void wait(config.timing.flash).then(() => node.remove());
 }

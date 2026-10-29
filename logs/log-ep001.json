@@ -1,0 +1,327 @@
+{
+  "episode": 1,
+  "seed": 20261029,
+  "summary": {
+    "episode": 1,
+    "battles": [
+      {
+        "episode": 1,
+        "battle": 1,
+        "attacker": "iq",
+        "defender": "kw",
+        "winner": "iq",
+        "loser": "kw",
+        "module": "rps",
+        "score": [
+          3,
+          0
+        ],
+        "rounds": [
+          {
+            "attacker": "scissors",
+            "defender": "paper",
+            "result": "attacker"
+          },
+          {
+            "attacker": "scissors",
+            "defender": "paper",
+            "result": "attacker"
+          },
+          {
+            "attacker": "paper",
+            "defender": "paper",
+            "result": "draw"
+          },
+          {
+            "attacker": "scissors",
+            "defender": "scissors",
+            "result": "draw"
+          },
+          {
+            "attacker": "rock",
+            "defender": "rock",
+            "result": "draw"
+          },
+          {
+            "attacker": "rock",
+            "defender": "scissors",
+            "result": "attacker"
+          }
+        ],
+        "transferred": [
+          "kw"
+        ]
+      },
+      {
+        "episode": 1,
+        "battle": 2,
+        "attacker": "bd",
+        "defender": "in",
+        "winner": "in",
+        "loser": "bd",
+        "module": "rps",
+        "score": [
+          2,
+          3
+        ],
+        "rounds": [
+          {
+            "attacker": "scissors",
+            "defender": "rock",
+            "result": "defender"
+          },
+          {
+            "attacker": "rock",
+            "defender": "scissors",
+            "result": "attacker"
+          },
+          {
+            "attacker": "rock",
+            "defender": "rock",
+            "result": "draw"
+          },
+          {
+            "attacker": "rock",
+            "defender": "scissors",
+            "result": "attacker"
+          },
+          {
+            "attacker": "paper",
+            "defender": "scissors",
+            "result": "defender"
+          },
+          {
+            "attacker": "rock",
+            "defender": "paper",
+            "result": "defender"
+          }
+        ],
+        "transferred": [
+          "bd"
+        ]
+      },
+      {
+        "episode": 1,
+        "battle": 3,
+        "attacker": "pw",
+        "defender": "ph",
+        "winner": "pw",
+        "loser": "ph",
+        "module": "rps",
+        "score": [
+          3,
+          0
+        ],
+        "rounds": [
+          {
+            "attacker": "rock",
+            "defender": "rock",
+            "result": "draw"
+          },
+          {
+            "attacker": "rock",
+            "defender": "rock",
+            "result": "draw"
+          },
+          {
+            "attacker": "paper",
+            "defender": "rock",
+            "result": "attacker"
+          },
+          {
+            "attacker": "scissors",
+            "defender": "paper",
+            "result": "attacker"
+          },
+          {
+            "attacker": "scissors",
+            "defender": "paper",
+            "result": "attacker"
+          }
+        ],
+        "transferred": [
+          "ph"
+        ]
+      }
+    ],
+    "countriesLeft": 232,
+    "countriesTotal": 235,
+    "mostWins": {
+      "code": "in",
+      "value": 1
+    },
+    "mostLand": {
+      "code": "ru",
+      "value": 0.12561638455139898
+    },
+    "topWins": [
+      {
+        "code": "in",
+        "value": 1
+      },
+      {
+        "code": "iq",
+        "value": 1
+      },
+      {
+        "code": "pw",
+        "value": 1
+      }
+    ],
+    "topLand": [
+      {
+        "code": "ru",
+        "value": 0.12561638455139898
+      },
+      {
+        "code": "ca",
+        "value": 0.07346680656835719
+      },
+      {
+        "code": "us",
+        "value": 0.0702468808313281
+      }
+    ]
+  },
+  "battles": [
+    {
+      "episode": 1,
+      "battle": 1,
+      "attacker": "iq",
+      "defender": "kw",
+      "winner": "iq",
+      "loser": "kw",
+      "module": "rps",
+      "score": [
+        3,
+        0
+      ],
+      "rounds": [
+        {
+          "attacker": "scissors",
+          "defender": "paper",
+          "result": "attacker"
+        },
+        {
+          "attacker": "scissors",
+          "defender": "paper",
+          "result": "attacker"
+        },
+        {
+          "attacker": "paper",
+          "defender": "paper",
+          "result": "draw"
+        },
+        {
+          "attacker": "scissors",
+          "defender": "scissors",
+          "result": "draw"
+        },
+        {
+          "attacker": "rock",
+          "defender": "rock",
+          "result": "draw"
+        },
+        {
+          "attacker": "rock",
+          "defender": "scissors",
+          "result": "attacker"
+        }
+      ],
+      "transferred": [
+        "kw"
+      ]
+    },
+    {
+      "episode": 1,
+      "battle": 2,
+      "attacker": "bd",
+      "defender": "in",
+      "winner": "in",
+      "loser": "bd",
+      "module": "rps",
+      "score": [
+        2,
+        3
+      ],
+      "rounds": [
+        {
+          "attacker": "scissors",
+          "defender": "rock",
+          "result": "defender"
+        },
+        {
+          "attacker": "rock",
+          "defender": "scissors",
+          "result": "attacker"
+        },
+        {
+          "attacker": "rock",
+          "defender": "rock",
+          "result": "draw"
+        },
+        {
+          "attacker": "rock",
+          "defender": "scissors",
+          "result": "attacker"
+        },
+        {
+          "attacker": "paper",
+          "defender": "scissors",
+          "result": "defender"
+        },
+        {
+          "attacker": "rock",
+          "defender": "paper",
+          "result": "defender"
+        }
+      ],
+      "transferred": [
+        "bd"
+      ]
+    },
+    {
+      "episode": 1,
+      "battle": 3,
+      "attacker": "pw",
+      "defender": "ph",
+      "winner": "pw",
+      "loser": "ph",
+      "module": "rps",
+      "score": [
+        3,
+        0
+      ],
+      "rounds": [
+        {
+          "attacker": "rock",
+          "defender": "rock",
+          "result": "draw"
+        },
+        {
+          "attacker": "rock",
+          "defender": "rock",
+          "result": "draw"
+        },
+        {
+          "attacker": "paper",
+          "defender": "rock",
+          "result": "attacker"
+        },
+        {
+          "attacker": "scissors",
+          "defender": "paper",
+          "result": "attacker"
+        },
+        {
+          "attacker": "scissors",
+          "defender": "paper",
+          "result": "attacker"
+        }
+      ],
+      "transferred": [
+        "ph"
+      ]
+    }
+  ]
+}

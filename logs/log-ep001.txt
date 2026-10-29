@@ -1,0 +1,32 @@
+EPISODE 1 (seed 20261029)
+
+Battle 1: Iraq attacks Kuwait — Rock Paper Scissors, first to 3.
+  Round 1: Iraq throws scissors, Kuwait throws paper. Scissors cut paper — point Iraq.
+  Round 2: Iraq throws scissors, Kuwait throws paper. Scissors cut paper — point Iraq.
+  Round 3: both throw paper — draw.
+  Round 4: both throw scissors — draw.
+  Round 5: both throw rock — draw.
+  Round 6: Iraq throws rock, Kuwait throws scissors. Rock crushes scissors — point Iraq.
+  Iraq wins 3–0 and takes Kuwait.
+
+Battle 2: Bangladesh attacks India — Rock Paper Scissors, first to 3.
+  Round 1: Bangladesh throws scissors, India throws rock. Rock crushes scissors — point India.
+  Round 2: Bangladesh throws rock, India throws scissors. Rock crushes scissors — point Bangladesh.
+  Round 3: both throw rock — draw.
+  Round 4: Bangladesh throws rock, India throws scissors. Rock crushes scissors — point Bangladesh.
+  Round 5: Bangladesh throws paper, India throws scissors. Scissors cut paper — point India.
+  Round 6: Bangladesh throws rock, India throws paper. Paper covers rock — point India.
+  India wins 3–2 and takes Bangladesh.
+
+Battle 3: Palau attacks Philippines — Rock Paper Scissors, first to 3.
+  Round 1: both throw rock — draw.
+  Round 2: both throw rock — draw.
+  Round 3: Palau throws paper, Philippines throws rock. Paper covers rock — point Palau.
+  Round 4: Palau throws scissors, Philippines throws paper. Scissors cut paper — point Palau.
+  Round 5: Palau throws scissors, Philippines throws paper. Scissors cut paper — point Palau.
+  Palau wins 3–0 and takes Philippines.
+
+Countries remaining: 232 of 235.
+Most battles won: India (1).
+Most land controlled: Russia (12.6% of the world).
+To be continued…

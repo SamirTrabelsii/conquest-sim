@@ -12,13 +12,23 @@ import { createPresenter } from './ui/episodeView';
 import { download } from './ui/download';
 import { battleModule } from './battles';
 import { config } from './config';
+import { theme } from './theme';
+import { useVirtualClock } from './ui/clock';
+import { preloadFlags } from './ui/flags';
 
 // URL overrides for development:
-// ?links ?speed=0.5 ?seed=123 ?autostart ?fresh ?nodownload
+// ?links ?speed=0.5 ?seed=123 ?autostart ?fresh ?nodownload ?safe
+// ?render switches to the virtual clock, driven by scripts/render.mjs.
 const params = new URLSearchParams(location.search);
 if (params.has('speed')) config.episode.speed = Number(params.get('speed'));
 if (params.has('seed')) config.episode.seed = Number(params.get('seed'));
 if (params.has('nodownload')) config.persistence.autoDownload = false;
+const rendering = params.has('render');
+if (rendering) {
+  config.episode.speed = 1;
+  config.persistence.autoDownload = false;
+}
+const clock = rendering ? useVirtualClock() : null;
 
 // The saved world from the previous episode, or a fresh world if none.
 async function loadWorld(atlas: Atlas): Promise<WorldState> {
@@ -46,8 +56,20 @@ map.render(territoryOwners(atlas, state));
 if (config.debug.showNeighborLinks || params.has('links')) map.showLinks(graph);
 if (params.has('safe')) showSafeZones(stage);
 
+// Everything visible must be ready before the first frame is captured.
+await Promise.all([document.fonts.load(`${theme.size.min}px ${theme.type.display.fontFamily}`), preloadFlags()]);
+
 const module = battleModule(config.battle.module);
 const presenter = createPresenter(stage, atlas, graph, state, map, module);
+// The renderer steps time through this handle and reads `done` + files.
+const renderHandle = {
+  advance: clock?.advance,
+  episode: state.nextEpisode,
+  render: config.render,
+  stage: config.stage,
+  done: false,
+};
+if (clock) Object.assign(window, { __render: renderHandle });
 const summary = await runEpisode(atlas, graph, state, presenter, {
   seed: config.episode.seed,
   battles: config.episode.battles,
@@ -61,8 +83,9 @@ const files = {
   [`log-${tag}.json`]: JSON.stringify(log, null, 2),
   [`log-${tag}.txt`]: narrateEpisode(atlas, log, battleModule),
 };
-// Exposed for tooling (e.g. a future automated MP4 renderer) and debugging.
+// Exposed for the MP4 renderer (which writes them into the project) and debugging.
 Object.assign(window, { episodeFiles: files });
+renderHandle.done = true;
 if (config.persistence.autoDownload)
   for (const [name, content] of Object.entries(files))
     download(name, content, name.endsWith('.txt') ? 'text/plain' : 'application/json');

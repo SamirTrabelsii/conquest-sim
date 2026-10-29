@@ -108,6 +108,14 @@ export const config = {
     // Download world state + battle log when the summary card appears.
     autoDownload: true,
   },
+  render: {
+    fps: 30,
+    // Seconds the final card stays on screen after the episode ends.
+    tailSeconds: 3,
+    jpegQuality: 92, // per-frame capture quality (frames are re-encoded)
+    crf: 18, // x264 quality: lower = better and bigger
+    preset: 'medium',
+  },
   debug: {
     showNeighborLinks: false,
   },

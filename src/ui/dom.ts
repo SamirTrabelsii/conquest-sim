@@ -65,3 +65,12 @@ export function flagImg(url: string, width: number, style: Style = {}): HTMLImag
   img.src = url;
   return img;
 }
+
+// A share of world land (0..1) as a percentage that never reads "0.0%":
+// tiny countries get more decimals.
+const SHARE_FLOOR = 0.01; // percent
+export function formatShare(share: number): string {
+  const pct = share * 100;
+  if (pct > 0 && pct < SHARE_FLOOR) return `<${SHARE_FLOOR}%`;
+  return `${pct.toFixed(pct < 0.1 ? 2 : 1)}%`;
+}
