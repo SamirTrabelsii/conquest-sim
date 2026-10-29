@@ -21,7 +21,11 @@ export interface EpisodeSummary {
   countriesTotal: number;
   mostWins: Standing; // all-time battles won
   mostLand: Standing; // share of world land, 0..1
+  topWins: Standing[]; // leaderboards for the summary card
+  topLand: Standing[];
 }
+
+const LEADERBOARD_SIZE = 3;
 
 // The UI side of an episode. The engine decides everything; the presenter
 // only shows it (and applies the conquest at the right moment).
@@ -47,6 +51,8 @@ export function summarize(atlas: Atlas, state: WorldState, episode: number, batt
     countriesTotal: atlas.countries.size,
     mostWins: { code: byWins[0], value: state.wins[byWins[0]] ?? 0 },
     mostLand: { code: byLand[0], value: shares.get(byLand[0])! },
+    topWins: byWins.slice(0, LEADERBOARD_SIZE).map((code) => ({ code, value: state.wins[code] ?? 0 })),
+    topLand: byLand.slice(0, LEADERBOARD_SIZE).map((code) => ({ code, value: shares.get(code)! })),
   };
 }
 

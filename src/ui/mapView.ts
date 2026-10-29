@@ -7,7 +7,7 @@ import type { NeighborGraph } from '../engine/graph';
 import { config } from '../config';
 import { theme } from '../theme';
 import { flagUrl } from './flags';
-import { tween } from './clock';
+import { duration, tween } from './clock';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -76,8 +76,8 @@ function clusterByGap(
 
 const easeInOut =(t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-// One rendering of the land: its patterns and its paths. A conquest builds a
-// new layer on top of the old one and reveals it, then drops the old one.
+// One rendering of land: its patterns and its paths. A conquest swaps in a
+// new layer; the falling piece is a small layer of its own.
 interface Layer {
   defs: SVGDefsElement;
   land: SVGGElement;
@@ -96,6 +96,8 @@ export class MapView {
   private camera: SVGGElement;
   private landHost: SVGGElement;
   private borders: SVGPathElement;
+  private fallHost: SVGGElement;
+  private spot: SVGGElement;
   private highlights: SVGGElement;
   readonly overlay: SVGGElement;
   private layer: Layer | null = null;
@@ -137,34 +139,103 @@ export class MapView {
       },
       this.camera,
     );
+    this.spot = el('g', { opacity: 0 }, this.camera);
+    this.fallHost = el('g', {}, this.camera);
     this.highlights = el('g', {}, this.camera);
     this.overlay = el('g', {}, this.camera);
   }
 
+  // Dims every country except `territories` (null fades the dimming away).
+  // The falling piece and highlights sit above it, so they stay bright.
+  async spotlight(territories: number[] | null, ms: number): Promise<void> {
+    const { width, height } = config.stage;
+    if (territories) {
+      // Covers any view the camera can reach.
+      const cover = { x: -width, y: -height, width: width * 3, height: height * 3 };
+      this.spot.replaceChildren();
+      const id = `spot-${++this.generation}`;
+      const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', ...cover }, this.spot);
+      el('rect', { ...cover, fill: 'white' }, mask);
+      const shape = merge(this.atlas.topology, territories.map((i) => this.atlas.geometries[i]) as never);
+      el('path', { d: this.path(shape) ?? '', fill: 'black' }, mask);
+      el('rect', { ...cover, fill: theme.color.ink, mask: `url(#${id})` }, this.spot);
+    }
+    const from = Number(this.spot.getAttribute('opacity'));
+    const to = territories ? config.map.spotlightDim : 0;
+    await tween(ms, (t) => this.spot.setAttribute('opacity', String(from + (to - from) * t)));
+    if (!territories) this.spot.replaceChildren();
+  }
+
+  // Map point (home zoom) → stage pixel under the current camera.
+  toScreen([x, y]: Point): Point {
+    return [x * this.view.k + this.view.x, y * this.view.k + this.view.y];
+  }
+
+  // A quick zoom-in-and-back "punch" plus a screen shake: the impact frame.
+  async punch(): Promise<void> {
+    const { punch, shake } = config.timing;
+    const { punchScale, shakeDistance } = config.map.impact;
+    const d = shakeDistance;
+    this.svg.animate(
+      [0, d, -d, d * 0.6, -d * 0.6, 0].map((dx, i) => ({ transform: `translate(${dx}px, ${i % 2 ? -dx / 2 : dx / 2}px)` })),
+      { duration: duration(shake), easing: 'linear' },
+    );
+    const base = this.view;
+    const { width, height } = config.stage;
+    // Zoom around the stage centre so the frame "pushes in" on the action.
+    const k = base.k * punchScale;
+    const cx = (width / 2 - base.x) / base.k;
+    const cy = (height / 2 - base.y) / base.k;
+    await this.moveTo({ k, x: width / 2 - cx * k, y: height / 2 - cy * k }, punch / 2);
+    await this.moveTo(base, punch / 2);
+  }
+
   // owners[i] = country code that currently owns territory i.
   render(owners: readonly string[]): void {
-    const next = this.buildLayer(owners);
+    const next = this.buildLayer(this.groupByOwner(owners), this.landHost);
     this.dropLayer();
     this.layer = next;
     this.drawBorders(owners);
   }
 
-  // Reveal the new ownership with a circle growing from `origin`, wide enough
-  // to cover `region`.
-  async conquer(owners: readonly string[], origin: Point, region: Bounds, ms: number): Promise<void> {
-    const next = this.buildLayer(owners);
-    const clipId = `wipe-${this.generation}`;
-    const clip = el('clipPath', { id: clipId }, next.defs);
-    const circle = el('circle', { cx: origin[0], cy: origin[1], r: 0 }, clip);
-    next.land.setAttribute('clip-path', `url(#${clipId})`);
-    const corners: Point[] = [region[0], region[1], [region[0][0], region[1][1]], [region[1][0], region[0][1]]];
-    const radius = Math.max(...corners.map(([x, y]) => Math.hypot(x - origin[0], y - origin[1])));
-    await tween(ms, (t) => circle.setAttribute('r', String(radius * easeInOut(t))));
-    next.land.removeAttribute('clip-path');
-    clip.remove();
+  // The signature "flag fall": the loser's land is cut out like a sticker,
+  // shakes, then drops off screen, revealing the winner's flag underneath.
+  async fall(owners: readonly string[], loser: string, territories: number[]): Promise<void> {
+    const { drop, rotate } = config.map.fall;
+    const piece = this.buildLayer(new Map([[loser, territories.map((i) => this.atlas.geometries[i])]]), this.fallHost);
+    const shape = merge(this.atlas.topology, territories.map((i) => this.atlas.geometries[i]) as never);
+    el('path', {
+      d: this.path(shape) ?? '',
+      fill: 'none',
+      stroke: theme.color.paper,
+      'stroke-width': theme.size.highlightWidth,
+      'stroke-linejoin': 'round',
+      'vector-effect': 'non-scaling-stroke',
+    }, piece.land);
+
+    const next = this.buildLayer(this.groupByOwner(owners), this.landHost);
     this.dropLayer();
     this.layer = next;
     this.drawBorders(owners);
+
+    const [[x0, y0], [x1, y1]] = this.regionBounds(territories);
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    const distance = (config.stage.height / this.view.k) * drop;
+    // Tip left or right depending on the loser, so falls don't all look alike.
+    const angle = rotate * (loser.charCodeAt(1) % 2 ? 1 : -1);
+    const { fallShake, fallShakes, fall } = config.timing;
+    await tween(fallShake, (t) => {
+      const wobble = Math.sin(t * Math.PI * 2 * fallShakes) * (1 - t) * config.map.fall.wobble;
+      piece.land.setAttribute('transform', `rotate(${wobble} ${cx} ${cy})`);
+    });
+    await tween(fall, (t) => {
+      const e = t * t; // gravity: slow start, fast finish
+      piece.land.setAttribute('transform', `translate(0 ${distance * e}) rotate(${angle * e} ${cx} ${cy})`);
+      piece.land.setAttribute('opacity', String(1 - Math.max(0, e - 0.6) / 0.4));
+    });
+    piece.defs.remove();
+    piece.land.remove();
   }
 
   private dropLayer(): void {
@@ -173,10 +244,10 @@ export class MapView {
     this.layer = null;
   }
 
-  private buildLayer(owners: readonly string[]): Layer {
+  private buildLayer(groups: Map<string, GeometryObject[]>, parent: SVGGElement): Layer {
     const gen = ++this.generation;
-    const layer: Layer = { defs: el('defs', {}, this.svg), land: el('g', {}, this.landHost) };
-    for (const [owner, geoms] of this.groupByOwner(owners)) this.renderEmpire(layer, gen, owner, geoms);
+    const layer: Layer = { defs: el('defs', {}, this.svg), land: el('g', {}, parent) };
+    for (const [owner, geoms] of groups) this.renderEmpire(layer, gen, owner, geoms);
     return layer;
   }
 
@@ -248,15 +319,22 @@ export class MapView {
 
   // ---- Highlights --------------------------------------------------------
 
-  outline(territories: number[], color: string): void {
+  // Outline of the merged territories; returns the path so callers can remove
+  // a single highlight (e.g. while the draw hops between candidates).
+  outline(
+    territories: number[],
+    color: string,
+    { width = theme.size.highlightWidth, dash = 'none' }: { width?: number; dash?: string } = {},
+  ): SVGPathElement {
     const merged = merge(this.atlas.topology, territories.map((i) => this.atlas.geometries[i]) as never);
-    el(
+    return el(
       'path',
       {
         d: this.path(merged) ?? '',
         fill: 'none',
         stroke: color,
-        'stroke-width': theme.size.highlightWidth,
+        'stroke-width': width,
+        'stroke-dasharray': dash,
         'stroke-linejoin': 'round',
         'vector-effect': 'non-scaling-stroke',
       },

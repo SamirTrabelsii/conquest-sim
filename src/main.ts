@@ -1,7 +1,7 @@
-import '@fontsource/anton';
+import '@fontsource/lilita-one/400.css';
 import '@fontsource-variable/inter';
 import './style.css';
-import { mountStage } from './ui/stage';
+import { mountStage, showSafeZones } from './ui/stage';
 import { loadAtlas, type Atlas } from './engine/atlas';
 import { buildGraph } from './engine/graph';
 import { initialState, territoryOwners, type WorldState } from './engine/world';
@@ -44,6 +44,7 @@ const state = await loadWorld(atlas);
 const map = new MapView(stage, atlas);
 map.render(territoryOwners(atlas, state));
 if (config.debug.showNeighborLinks || params.has('links')) map.showLinks(graph);
+if (params.has('safe')) showSafeZones(stage);
 
 const module = battleModule(config.battle.module);
 const presenter = createPresenter(stage, atlas, graph, state, map, module);

@@ -27,8 +27,8 @@ const ICON: Record<Throw, string> = {
           <path d="M64 14 V30 H80" fill="none" stroke="#2b2420" stroke-width="5" stroke-linejoin="round"/>
           <path d="M36 46 H70 M36 58 H70 M36 70 H60" stroke="#9fb0c6" stroke-width="4" stroke-linecap="round"/>`,
   scissors: `<path d="M36 64 L72 16 M64 64 L28 16" stroke="#c9d3df" stroke-width="9" stroke-linecap="round"/>
-             <circle cx="32" cy="76" r="13" fill="none" stroke="${theme.color.attacker}" stroke-width="7"/>
-             <circle cx="68" cy="76" r="13" fill="none" stroke="${theme.color.attacker}" stroke-width="7"/>
+             <circle cx="32" cy="76" r="13" fill="none" stroke="${theme.color.accent}" stroke-width="7"/>
+             <circle cx="68" cy="76" r="13" fill="none" stroke="${theme.color.accent}" stroke-width="7"/>
              <circle cx="50" cy="40" r="4" fill="#2b2420"/>`,
 };
 
@@ -38,7 +38,7 @@ function hand(side: Side): HTMLElement {
     width: px(size),
     height: px(size),
     borderRadius: '50%',
-    background: theme.color.panel,
+    background: theme.color.ink,
     border: `6px solid ${side === 'attacker' ? theme.color.attacker : theme.color.defender}`,
     display: 'grid',
     placeItems: 'center',
@@ -68,6 +68,20 @@ async function shake(nodes: HTMLElement[]): Promise<void> {
   await wait(rpsShake);
 }
 
+// Both hands lunge at each other and bounce back: the moment of the reveal.
+async function clash(left: HTMLElement, right: HTMLElement): Promise<void> {
+  const reach = theme.size.hand * 0.45;
+  const ms = duration(config.timing.clash);
+  const lunge = (dx: number) => [
+    { transform: 'translateX(0) scale(1)' },
+    { transform: `translateX(${dx}px) scale(1.1)`, offset: 0.45 },
+    { transform: 'translateX(0) scale(1)' },
+  ];
+  left.animate(lunge(reach), { duration: ms, easing: 'ease-in-out' });
+  right.animate(lunge(-reach), { duration: ms, easing: 'ease-in-out' });
+  await wait(config.timing.clash * 0.45);
+}
+
 export const rps: BattleModule = {
   id: 'rps',
   title: 'Rock Paper Scissors',
@@ -90,35 +104,43 @@ export const rps: BattleModule = {
   async animate(result, _attacker, _defender, ui): Promise<void> {
     const left = hand('attacker');
     const right = hand('defender');
-    ui.arena.replaceChildren(
-      h('div', { display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%' }, [
-        left,
-        right,
-      ]),
-    );
+    ui.arena.attacker.replaceChildren(left);
+    ui.arena.defender.replaceChildren(right);
 
     const score: [number, number] = [0, 0];
+    ui.setScore(0, 0);
     for (const round of result.rounds as Round[]) {
       setIcon(left, 'rock', false);
       setIcon(right, 'rock', true);
-      ui.caption('Rock… paper… scissors…');
+      ui.caption('ROCK… PAPER… SCISSORS…');
       await shake([left, right]);
 
       setIcon(left, round.attacker, false);
       setIcon(right, round.defender, true);
+      await clash(left, right);
+      ui.impact(round.result);
       if (round.result === 'draw') {
-        ui.caption('Draw — again!', theme.color.textMuted);
+        ui.caption('DRAW — AGAIN!');
         await wait(config.timing.rpsDrawPause);
         continue;
       }
       score[round.result === 'attacker' ? 0 : 1]++;
       ui.setScore(score[0], score[1]);
       const winningThrow = round.result === 'attacker' ? round.attacker : round.defender;
-      ui.caption(VERB[winningThrow], round.result === 'attacker' ? theme.color.attacker : theme.color.defender);
-      const loserNode = round.result === 'attacker' ? right : left;
-      loserNode.animate([{ opacity: 1 }, { opacity: 0.35 }, { opacity: 1 }], {
-        duration: duration(config.timing.rpsReveal),
-      });
+      ui.caption(VERB[winningThrow].toUpperCase(), round.result);
+      const [winnerNode, loserNode] = round.result === 'attacker' ? [left, right] : [right, left];
+      const reveal = duration(config.timing.rpsReveal);
+      winnerNode.animate([{ transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: reveal / 2, easing: theme.motion.pop });
+      loserNode.animate(
+        [
+          { transform: 'translateX(0)', filter: 'grayscale(0)' },
+          { transform: 'translateX(-6px)', filter: 'grayscale(1)', offset: 0.1 },
+          { transform: 'translateX(6px)', filter: 'grayscale(1)', offset: 0.2 },
+          { transform: 'translateX(0)', filter: 'grayscale(1)', offset: 0.3 },
+          { transform: 'translateX(0)', filter: 'grayscale(0)' },
+        ],
+        { duration: reveal },
+      );
       await wait(config.timing.rpsReveal);
     }
   },

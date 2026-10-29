@@ -14,10 +14,16 @@ export const config = {
   },
   // Durations in ms at speed 1.
   timing: {
-    introHold: 1500,
+    hookIn: 500,
+    hookStagger: 150,
+    hookOut: 400,
+    introHold: 1800,
+    counterTick: 700,
+    dotPulse: 900,
     cardFade: 600,
     matchupIntro: 1800,
     panelIn: 400,
+    cardPop: 350,
     panelOut: 300,
     rpsShake: 1200,
     rpsShakes: 3,
@@ -25,9 +31,29 @@ export const config = {
     rpsDrawPause: 700,
     duelResult: 1800,
     zoomIn: 1400,
-    conquest: 1600,
-    afterConquest: 1200,
+    spotlight: 450,
+    pinIn: 350,
+    punch: 320,
+    shake: 380,
+    flash: 280,
+    clash: 260,
+    burst: 480,
+    stampIn: 350,
+    stampOut: 250,
+    fallShake: 500,
+    fallShakes: 3,
+    fall: 1100,
+    afterConquest: 1600,
     zoomOut: 1200,
+    // The draw: candidate flags flip from fast to slow before locking in.
+    drawFastFlip: 70,
+    drawSlowFlip: 420,
+    drawLock: 1100,
+    neighborsShow: 900,
+  },
+  draw: {
+    attackerFlips: 16,
+    defenderFlipsMax: 10,
   },
   battle: {
     module: 'rps',
@@ -38,7 +64,7 @@ export const config = {
   map: {
     // The map covers the whole stage; the zoomed-out "home" view fits the
     // world into this box (stage pixels).
-    home: { top: 380, height: 760, padding: 16 },
+    home: { top: 330, height: 640, padding: 24 },
     // Longitude rotation so the map's cut runs east of Chukotka and Fiji
     // instead of slicing Russia in two.
     rotate: -12,
@@ -52,6 +78,13 @@ export const config = {
     // Clusters smaller than this (px² at home zoom) reuse the empire's main
     // flag instead of getting their own fitted copy.
     minOwnFlagArea: 150,
+    // Flag-fall conquest: how far (share of screen height) and how much
+    // (degrees) the loser's piece drops and tips, and its pre-fall wobble.
+    fall: { drop: 0.9, rotate: 14, wobble: 2.5 },
+    // Opacity of the dark veil over countries not in the current battle.
+    spotlightDim: 0.62,
+    // K.O. impact: camera push-in factor and screen shake distance (px).
+    impact: { punchScale: 1.06, shakeDistance: 14, flashOpacity: 0.75 },
     // Numeric ISO ids left out of play entirely (010 = Antarctica).
     excludedIds: ['010'],
     // Countries with no land border get links to this many nearest countries.
@@ -59,9 +92,14 @@ export const config = {
   },
   camera: {
     // Where the battle region is framed while the duel panel is up.
-    box: { top: 300, height: 820, padding: 70 },
+    box: { top: 290, height: 730, padding: 70 },
     // Caps the zoom so tiny countries are not blown up to pixel mush.
     maxScale: 9,
+  },
+  story: {
+    streakMin: 2, // wins in a row for a "streak" badge
+    underdogRatio: 3, // rival holds this many times more land
+    empireMin: 2, // countries held for an "empire" badge
   },
   persistence: {
     // Loaded at startup if present (served from public/). Put the world file

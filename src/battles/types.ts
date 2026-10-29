@@ -7,6 +7,9 @@ export interface Fighter {
 
 export type Side = 'attacker' | 'defender';
 
+// Caption colour scheme: neutral bar, a side's colour, or the brand accent.
+export type Tone = 'neutral' | Side | 'accent';
+
 export interface BattleResult {
   winner: Side;
   score: [number, number]; // attacker, defender
@@ -15,9 +18,12 @@ export interface BattleResult {
 
 // What the duel panel offers a battle module.
 export interface DuelUI {
-  arena: HTMLElement; // module-owned area between the two fighters
+  // Module-owned slot next to each fighter (e.g. the rock-paper-scissors hand).
+  arena: Record<Side, HTMLElement>;
   setScore(attacker: number, defender: number): void;
-  caption(text: string, color?: string): void;
+  caption(text: string, tone?: Tone): void;
+  // Round impact effect (starburst, score pop) in the round winner's colour.
+  impact(result: Side | 'draw'): void;
 }
 
 // A module decides the outcome up front from the RNG alone (so episodes can be
