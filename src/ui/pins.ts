@@ -2,6 +2,7 @@ import { config } from '../config';
 import { theme } from '../theme';
 import { h, px, sticker, text } from './dom';
 import { duration, wait } from './clock';
+import { cue } from './sound';
 
 type Point = [number, number];
 
@@ -62,6 +63,7 @@ export class Pins {
       const x = Math.min(Math.max(boxes[i].x - w / 2, left), right - w);
       const y = Math.max(p.at[1] - stem - hgt, minTop);
       Object.assign(nodes[i].style, { left: px(x), top: px(y) });
+      cue('pop', { delay: i * config.timing.hookStagger });
       nodes[i].animate([{ transform: 'scale(0)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], {
         duration: duration(config.timing.pinIn),
         easing: theme.motion.pop,

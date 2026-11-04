@@ -2,6 +2,7 @@ import { config } from '../config';
 import { theme } from '../theme';
 import { h, px } from '../ui/dom';
 import { duration, wait } from '../ui/clock';
+import { cue } from '../ui/sound';
 import type { BattleModule, BattleResult, Side } from './types';
 
 type Throw = 'rock' | 'paper' | 'scissors';
@@ -54,6 +55,9 @@ function setIcon(node: HTMLElement, t: Throw, mirror: boolean): void {
 }
 
 async function shake(nodes: HTMLElement[]): Promise<void> {
+  // A tap on every downbeat of the shake.
+  const beat = config.timing.rpsShake / config.timing.rpsShakes;
+  for (let k = 0; k < config.timing.rpsShakes; k++) cue('tap', { delay: k * beat + beat / 2 });
   const { rpsShake, rpsShakes } = config.timing;
   const lift = theme.size.hand * 0.18;
   for (const n of nodes)
@@ -117,6 +121,7 @@ export const rps: BattleModule = {
 
       setIcon(left, round.attacker, false);
       setIcon(right, round.defender, true);
+      cue('clash', { delay: config.timing.clash * 0.45 });
       await clash(left, right);
       ui.impact(round.result);
       if (round.result === 'draw') {

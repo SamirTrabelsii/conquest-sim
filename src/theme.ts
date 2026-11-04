@@ -1,18 +1,19 @@
 // All visual identity lives here: brand, palette, type, shapes, motion, layout.
-// Direction: "Arcade" — sticker pop. Deep violet, flags and bars cut out like
-// stickers with thick white edges, hot yellow accent, chunky rounded type,
-// bouncy motion.
+// Brand: MAPQUAKE — every battle is a tremor that redraws the world map.
+// Direction: "Arcade" — sticker pop. Deep violet night sky, flags and bars cut
+// out like stickers with thick white edges, molten-magma accent, chunky
+// rounded type, bouncy motion.
 
 const display = "'Lilita One', 'Arial Rounded MT Bold', sans-serif";
 const body = "'Inter Variable', 'Segoe UI', sans-serif";
 
 export const theme = {
   brand: {
-    name: 'FLAGFALL',
-    hook: 'WHO FALLS TODAY?',
-    cta: 'FOLLOW FOR EPISODE',
+    name: 'MAPQUAKE',
+    hook: 'THE MAP IS SHAKING',
+    cta: 'NEXT QUAKE: EPISODE',
     ko: 'K.O.!',
-    results: 'RESULTS',
+    results: 'AFTERSHOCK',
     // Story badges on fighter cards; {n} is replaced by the number.
     badges: { streak: '{n} IN A ROW', underdog: 'UNDERDOG', empire: '{n} NATIONS' },
   },
@@ -26,9 +27,9 @@ export const theme = {
     textOnPaper: '#ffffff',
     muted: '#b9a8e6', // secondary text on ink
     mutedOnPaper: '#cbbcf2',
-    accent: '#ffd60a',
+    accent: '#ff9f1c', // magma
     onAccent: '#1d0b40',
-    attacker: '#ff3d8b',
+    attacker: '#ff3d5a',
     onAttacker: '#ffffff',
     defender: '#2de2e6',
     onDefender: '#1d0b40',

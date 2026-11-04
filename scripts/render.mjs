@@ -8,7 +8,8 @@
 //
 // The app runs in headless Chrome on a virtual clock: time only moves when
 // this script advances it, one frame at a time, so the video never stutters
-// however slow capturing is. Frames are piped straight into ffmpeg.
+// however slow capturing is. Frames are piped straight into ffmpeg; the sound
+// cues recorded on the same clock are then mixed into the audio track.
 
 import { build, preview } from 'vite';
 import { chromium } from 'playwright-core';
@@ -18,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { addAudio, mixEpisode } from './audio.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({
@@ -112,7 +114,15 @@ try {
   const minutes = ((Date.now() - started) / 60000).toFixed(1);
   log(`${frame} frames (${(frame / fps).toFixed(1)}s of video) in ${minutes} min`);
 
-  // 5. Write the logs and the next save straight into the project.
+  // 5. Sound: mix the recorded cues (and optional music) into the MP4.
+  const { cues, audio } = await page.evaluate(() => ({ cues: window.__render.cues(), audio: window.__render.audio }));
+  await writeFile(path('renders', `${name}.cues.json`), JSON.stringify(cues, null, 1) + '\n');
+  const { mix, missing } = await mixEpisode({ root, cues, audio, seconds: frame / fps });
+  if (missing.length) log(`no sound file for: ${missing.join(', ')} (run npm run sfx)`);
+  const { loudness } = await addAudio({ video: out, mix, audio, workDir: path('renders') });
+  log(`audio: ${cues.length} cues${audio.music ? ` + music ${audio.music}` : ''}, ${loudness === null ? 'silent' : `normalised from ${loudness.toFixed(1)} to ${audio.loudness} LUFS`}`);
+
+  // 6. Write the logs and the next save straight into the project.
   if (failed) throw new Error('page errors during render; saves left untouched');
   if (partial || args.dry) {
     log('partial or dry run: saves and logs left untouched');

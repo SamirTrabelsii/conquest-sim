@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "render": "node scripts/render.mjs"
+    "render": "node scripts/render.mjs",
+    "sfx": "node scripts/make-sfx.mjs",
+    "brand": "node scripts/brand.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

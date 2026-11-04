@@ -5,6 +5,7 @@ import type { Badge } from '../engine/stories';
 import { flagImg, h, px, sticker, stickerEdge, text } from './dom';
 import { duration } from './clock';
 import { flagUrl } from './flags';
+import { cue } from './sound';
 
 const c = theme.color;
 const sideColor = (side: Side) => (side === 'attacker' ? c.attacker : c.defender);
@@ -77,6 +78,7 @@ class FighterCard {
   setBadge(badge: Badge | null): void {
     this.badge.replaceChildren();
     if (!badge) return;
+    cue('slap');
     const label = theme.brand.badges[badge.kind].replace('{n}', String(Math.round(badge.value)));
     const node = sticker(c.accent, [text(label, 'label', theme.size.min, c.onAccent)], {
       padding: `${px(theme.size.gap / 4)} ${px(theme.size.gap / 2)}`,
@@ -257,6 +259,8 @@ export class DuelPanel implements DuelUI {
 
   // Round impact: a starburst in the round winner's colour and a score pop.
   impact(result: Side | 'draw'): void {
+    if (result === 'draw') cue('bonk');
+    else cue('point', { rate: result === 'defender' ? config.audio.defenderPointRate : 1 });
     const fill = result === 'draw' ? c.muted : sideColor(result);
     this.burst.innerHTML = `<svg viewBox="0 0 100 100" width="100%" height="100%"><polygon points="${starPoints()}" fill="${fill}" stroke="${c.sticker}" stroke-width="3" stroke-linejoin="round"/></svg>`;
     const ms = duration(config.timing.burst);

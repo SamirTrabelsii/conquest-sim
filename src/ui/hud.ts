@@ -2,6 +2,7 @@ import { config } from '../config';
 import { theme } from '../theme';
 import { h, px, sticker, text } from './dom';
 import { duration, tween } from './clock';
+import { cue } from './sound';
 
 // Always-on scoreboard: brand, episode, battle, countries left.
 export class Hud {
@@ -96,6 +97,7 @@ export class Hud {
       this.count.textContent = String(left);
       return;
     }
+    cue('count');
     this.countBox.animate(
       [{ background: theme.color.accent }, { background: theme.color.ink }],
       { duration: duration(config.timing.counterTick) },

@@ -15,6 +15,7 @@ import { config } from './config';
 import { theme } from './theme';
 import { useVirtualClock } from './ui/clock';
 import { preloadFlags } from './ui/flags';
+import { preloadSounds, recordedCues } from './ui/sound';
 
 // URL overrides for development:
 // ?links ?speed=0.5 ?seed=123 ?autostart ?fresh ?nodownload ?safe
@@ -57,16 +58,23 @@ if (config.debug.showNeighborLinks || params.has('links')) map.showLinks(graph);
 if (params.has('safe')) showSafeZones(stage);
 
 // Everything visible must be ready before the first frame is captured.
-await Promise.all([document.fonts.load(`${theme.size.min}px ${theme.type.display.fontFamily}`), preloadFlags()]);
+await Promise.all([
+  document.fonts.load(`${theme.size.min}px ${theme.type.display.fontFamily}`),
+  preloadFlags(),
+  preloadSounds(),
+]);
 
 const module = battleModule(config.battle.module);
 const presenter = createPresenter(stage, atlas, graph, state, map, module);
-// The renderer steps time through this handle and reads `done` + files.
+// The renderer steps time through this handle and reads `done`, the files
+// and the sound cues (which it mixes into the MP4's audio track).
 const renderHandle = {
   advance: clock?.advance,
   episode: state.nextEpisode,
   render: config.render,
   stage: config.stage,
+  audio: config.audio,
+  cues: recordedCues,
   done: false,
 };
 if (clock) Object.assign(window, { __render: renderHandle });

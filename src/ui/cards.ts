@@ -6,6 +6,7 @@ import { flagImg, formatShare, h, px, sticker, stickerEdge, text } from './dom';
 import { duration, wait } from './clock';
 import { flagUrl } from './flags';
 import { startHint } from './stage';
+import { cue, unlockAudio, type Sfx } from './sound';
 
 const c = theme.color;
 const { left, right, top, bottom } = theme.layout.safe;
@@ -18,6 +19,7 @@ function waitForStart(stage: HTMLElement): Promise<void> {
   const hint = startHint('Press SPACE or click to start');
   return new Promise((resolve) => {
     const done = () => {
+      unlockAudio(); // the Start gesture is what lets the browser play sound
       window.removeEventListener('keydown', onKey);
       stage.removeEventListener('click', done);
       hint.remove();
@@ -32,7 +34,8 @@ function waitForStart(stage: HTMLElement): Promise<void> {
 }
 
 // Stickers pop in: they rise, overshoot, and settle.
-function popIn(node: HTMLElement, delay: number): void {
+function popIn(node: HTMLElement, delay: number, sfx: Sfx = 'pop'): void {
+  cue(sfx, { delay });
   node.animate([{ transform: `translateY(${px(theme.size.hand / 2)}) scale(0.6)`, opacity: 0 }, { transform: 'none', opacity: 1 }], {
     duration: duration(config.timing.hookIn),
     delay: duration(delay),
@@ -69,6 +72,7 @@ export async function showIntro(stage: HTMLElement, episode: number, countriesLe
   stage.appendChild(hook);
   bars.forEach((bar, i) => popIn(bar, i * t.hookStagger));
   await wait(t.hookIn + t.hookStagger * bars.length + t.introHold);
+  cue('whoosh');
   hook.animate([{ transform: 'none', opacity: 1 }, { transform: 'scale(0.6)', opacity: 0 }], {
     duration: duration(t.hookOut),
     easing: theme.motion.exit,
@@ -142,7 +146,11 @@ export async function showSummary(stage: HTMLElement, atlas: Atlas, s: EpisodeSu
   const card = h('div', { position: 'absolute', inset: '0', background: c.overlay }, [content]);
   stage.appendChild(card);
   card.animate([{ opacity: 0 }, { opacity: 1 }], { duration: duration(config.timing.cardFade), fill: 'forwards' });
-  [...content.children].forEach((child, i) => popIn(child as HTMLElement, config.timing.cardFade + i * config.timing.hookStagger));
+  // Each card pops in with a pop; the last one (the follow call) with a jingle.
+  const cards = [...content.children] as HTMLElement[];
+  cards.forEach((child, i) =>
+    popIn(child, config.timing.cardFade + i * config.timing.hookStagger, i === cards.length - 1 ? 'jingle' : 'pop'),
+  );
   await wait(config.timing.cardFade + config.timing.hookIn + config.timing.hookStagger * content.children.length);
 }
 
@@ -162,6 +170,7 @@ export function stamp(stage: HTMLElement, label: string): () => Promise<void> {
     pointerEvents: 'none',
   }, [node]);
   stage.appendChild(holder);
+  cue('impact');
   node.animate([{ transform: 'scale(2.4)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], {
     duration: duration(config.timing.stampIn),
     easing: theme.motion.pop,

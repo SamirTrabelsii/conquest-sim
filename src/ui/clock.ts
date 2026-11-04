@@ -23,6 +23,15 @@ const timers: Timer[] = [];
 const tweens: Tween[] = [];
 const animations: { anim: Animation; start: number }[] = [];
 
+// Current virtual time in ms (render mode only; 0 otherwise).
+export function virtualNow(): number {
+  return now;
+}
+
+export function isVirtual(): boolean {
+  return virtual;
+}
+
 export function duration(ms: number): number {
   return ms * config.episode.speed;
 }

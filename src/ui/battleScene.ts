@@ -21,6 +21,7 @@ import type { Hud } from './hud';
 import { wait } from './clock';
 import { formatShare } from './dom';
 import { flash, stamp } from './cards';
+import { cue } from './sound';
 import type { Pins } from './pins';
 import { storyBadges } from '../engine/stories';
 
@@ -88,6 +89,8 @@ async function spin(ctx: SceneContext, side: Side, sequence: string[], color: st
   for (let i = 0; i < sequence.length; i++) {
     const code = sequence[i];
     ctx.panel.setFighter(side, fighter(ctx.atlas, code));
+    // Ticks rise in pitch as the spin slows down towards the pick.
+    cue('tick', { rate: 1 + (config.audio.tickRise * i) / Math.max(1, sequence.length - 1) });
     mark?.remove();
     mark = ctx.map.outline(territoriesOf(ctx, code), color);
     await wait(flipDelay(i, sequence.length));
@@ -104,6 +107,7 @@ async function drawMatchup(ctx: SceneContext, matchup: Matchup, rng: Rng, hero: 
   const badges = storyBadges(atlas, state, matchup);
 
   panel.show('THE DRAW', ctx.module.target);
+  cue('sweep');
   if (hero) {
     panel.caption(`HERO NATION: ${a.name.toUpperCase()}`, 'accent');
   } else {
@@ -112,6 +116,7 @@ async function drawMatchup(ctx: SceneContext, matchup: Matchup, rng: Rng, hero: 
     await spin(ctx, 'attacker', flipSequence(pool, attacker, config.draw.attackerFlips, rng), theme.color.attacker);
   }
   panel.setFighter('attacker', a, true);
+  cue('lock');
   panel.setBadge('attacker', badges.attacker);
   const atk = territoriesOf(ctx, attacker);
   map.outline(atk, theme.color.attacker);
@@ -121,6 +126,7 @@ async function drawMatchup(ctx: SceneContext, matchup: Matchup, rng: Rng, hero: 
   // Only neighbors can defend: show them all, then spin among them.
   const neighbors = empireNeighbors(atlas, graph, state, attacker);
   const neighborTerritories = neighbors.flatMap((n) => territoriesOf(ctx, n));
+  cue('sweep');
   const dashes = neighbors.map((n) =>
     map.outline(territoriesOf(ctx, n), theme.color.accent, { width: theme.size.neighborWidth, dash: '10 6' }),
   );
@@ -132,6 +138,7 @@ async function drawMatchup(ctx: SceneContext, matchup: Matchup, rng: Rng, hero: 
   await spin(ctx, 'defender', flipSequence(neighbors, defender, flips, rng), theme.color.defender);
   dashes.forEach((p) => p.remove());
   panel.setFighter('defender', d, true);
+  cue('lock', { rate: config.audio.defenderLockRate });
   panel.setBadge('defender', badges.defender);
   map.outline(territoriesOf(ctx, defender), theme.color.defender);
   panel.caption(`${d.name.toUpperCase()} MUST DEFEND!`, 'defender');
@@ -175,6 +182,7 @@ export async function playBattle(
   const attackerWon = result.winner === 'attacker';
   const [winner, loser] = attackerWon ? [a, d] : [d, a];
   panel.declare(result.winner, winner.name);
+  cue('fanfare');
   await wait(t.duelResult);
 
   const loserTerritories = attackerWon ? def : atk;
@@ -187,6 +195,7 @@ export async function playBattle(
   const peel = stamp(ctx.stage, theme.brand.ko);
   flash(ctx.stage);
   await map.punch();
+  cue('fall', { delay: t.fallShake });
   await map.fall(territoryOwners(atlas, state), loser.code, loserTerritories);
   await peel();
 

@@ -8,6 +8,7 @@ import { config } from '../config';
 import { theme } from '../theme';
 import { flagUrl } from './flags';
 import { duration, tween } from './clock';
+import { cue } from './sound';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -380,6 +381,7 @@ export class MapView {
 
   // Fit `bounds` into the camera box above the duel panel.
   async focus(bounds: Bounds, ms: number): Promise<void> {
+    cue('whoosh');
     const { box, maxScale } = config.camera;
     const { width } = config.stage;
     const bw = Math.max(bounds[1][0] - bounds[0][0], 1);
@@ -391,6 +393,7 @@ export class MapView {
   }
 
   home(ms: number): Promise<void> {
+    cue('whoosh');
     return this.moveTo({ k: 1, x: 0, y: 0 }, ms);
   }
 
